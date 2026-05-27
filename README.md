@@ -30,7 +30,7 @@ The pod does **not** access the database directly — all data operations go thr
 
 | Variable | Description |
 |----------|-------------|
-| `API_URL` | Base URL of the API (e.g. `http://api-svc.reimagined-disco.svc.cluster.local:3000`) |
+| `API_URL` | Base URL of the API (e.g. `http://api-svc.reimagined-disco.svc.cluster.local:80`) |
 | `API_TOKEN` | Bearer token for internal API authentication |
 | `LOG_LEVEL` | Log verbosity (`trace`, `debug`, `info`, `warn`, `error`) |
 
