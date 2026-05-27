@@ -8,11 +8,11 @@ async function _call(method, path, body) {
     const options = {
         method,
         headers: {
-            'Content-Type': 'application/json',
             'Authorization': `Bearer ${TOKEN}`,
         },
     };
     if (body !== undefined) {
+        options.headers['Content-Type'] = 'application/json';
         options.body = JSON.stringify(body);
     }
     logger.trace(`${method} ${path}`);
