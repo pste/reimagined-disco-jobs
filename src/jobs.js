@@ -1,10 +1,12 @@
 const logger = require('./logger');
 const api = require('./api');
 const filescan = require('./filescan');
+const id3write = require('./id3write');
 
 const HANDLERS = {
     'filescan': () => filescan.fastscan(false),
     'fullscan': () => filescan.fastscan(true),
+    'id3write': () => id3write.run(),
 };
 
 async function run() {

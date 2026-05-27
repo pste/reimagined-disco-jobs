@@ -19,6 +19,7 @@ The pod does **not** access the database directly — all data operations go thr
 |------|-------------|
 | `filescan` | Scans the music folder, syncs new/changed/removed files with the library |
 | `fullscan` | Same as `filescan` but re-reads ID3 tags for every file regardless of changes |
+| `id3write` | Writes user-edited ID3 tags to audio files; processes all pending rows from `user_id3`; NULL fields are skipped |
 
 ## Stack
 
