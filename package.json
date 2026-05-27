@@ -1,0 +1,17 @@
+{
+  "name": "reimagined-disco-jobs",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "pste",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "prod": "node app.js"
+  },
+  "dependencies": {
+    "node-id3": "^0.2.9",
+    "pino": "^10.3.1",
+    "pino-pretty": "^13.1.3"
+  }
+}
