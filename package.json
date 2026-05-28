@@ -6,10 +6,12 @@
   "author": "pste",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
+    "dev": "node app.js",
     "prod": "node app.js"
   },
   "dependencies": {
+    "cron-parser": "^4.9.0",
+    "dotenv": "^16.4.7",
     "node-id3": "^0.2.9",
     "pino": "^10.3.1",
     "pino-pretty": "^13.1.3"

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const logger = require('./src/logger');
 const jobs = require('./src/jobs');
 

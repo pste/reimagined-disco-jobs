@@ -70,9 +70,19 @@ async function setTagError(song_id) {
     return _call('PATCH', `/api/scan/id3/${song_id}`);
 }
 
+async function getParameters() {
+    return _call('GET', '/api/parameters/scan');
+}
+
+async function createJob(name, when) {
+    return _call('POST', '/api/jobs/scan', { name, when });
+}
+
 module.exports = {
     claimNextJob,
     updateJob,
+    getParameters,
+    createJob,
     getFiles,
     getBasedir,
     upsertSong,
