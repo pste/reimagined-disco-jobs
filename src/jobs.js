@@ -36,6 +36,13 @@ async function executeJob(job) {
         if (job.name === 'filescan') {
             await requeueScan();
         }
+        // dopo un id3write i file sono cambiati su disco: accoda subito un filescan
+        // (incrementale via mtime) così songs/albums/covers si riallineano — il loop
+        // di scodamento lo esegue nello stesso run del pod
+        if (job.name === 'id3write') {
+            const scan = await api.createJob('filescan', new Date());
+            logger.info(`id3write done: filescan queued [job_id: ${scan.job_id}]`);
+        }
     }
     catch(err) {
         logger.error(err, 'Job failed');
