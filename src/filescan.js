@@ -1,6 +1,7 @@
 const fs = require('node:fs/promises');
 const path = require('path');
 const NodeID3 = require('node-id3').Promise;
+const mm = require('music-metadata');
 const logger = require('./logger');
 const api = require('./api');
 
@@ -31,6 +32,19 @@ async function readid3(filepath) {
         logger.error(err, "filescan readid3 error:");
     }
     return tags;
+}
+
+// node-id3 non espone il bitrate: lo legge music-metadata (header only, niente durata).
+// Nei VBR il bitrate medio è un float → arrotondato, la colonna files.bitrate è int.
+async function readBitrate(filepath) {
+    try {
+        const { format } = await mm.parseFile(filepath, { duration: false });
+        return (format.bitrate != null) ? Math.round(format.bitrate) : null;
+    }
+    catch(err) {
+        logger.error(err, "filescan readBitrate error:");
+        return null;
+    }
 }
 
 async function filedetails(basedir, parentpath, filename) {
@@ -81,8 +95,14 @@ async function fastscan(forceFullScan) {
     logger.info(`DB updating ...`);
     for await (const diskfile of filesdisk) {
         const dbfile = filesdbMap.get(diskfile.fullpath);
-        if (forceFullScan === true || !dbfile) {
+        // 'modified' in DB è max(mtime, ctime) (vedi updateSong lato API): se su disco è
+        // cambiato (es: file riscritto da id3write) i tag vanno riletti anche nel fast scan.
+        // Tolleranza 1s per assorbire le differenze di precisione tra filesystem e DB.
+        const diskModified = Math.max(diskfile.mtime.getTime(), diskfile.ctime.getTime());
+        const changed = dbfile && Math.abs(diskModified - new Date(dbfile.modified).getTime()) > 1000;
+        if (forceFullScan === true || !dbfile || changed) {
             diskfile.tags = await readid3(diskfile.fullpath);
+            diskfile.bitrate = await readBitrate(diskfile.fullpath);
             logger.trace(`DB UPDATE: ${diskfile.fullpath}`);
             await api.upsertSong(diskfile);
         }

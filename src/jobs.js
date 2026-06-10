@@ -22,12 +22,7 @@ async function requeueScan() {
     logger.info(`requeue: filescan scheduled at ${nextDate.toISOString()} [job_id: ${job.job_id}]`);
 }
 
-async function run() {
-    const job = await api.claimNextJob();
-    if (!job) {
-        logger.info('No pending jobs.');
-        return;
-    }
+async function executeJob(job) {
     logger.info(`Executing job [${job.job_id}] ${job.name}`);
     const handler = HANDLERS[job.name];
     if (!handler) {
@@ -46,6 +41,20 @@ async function run() {
         logger.error(err, 'Job failed');
         await api.updateJob(job.job_id, 'error', err.message);
     }
+}
+
+// Scoda tutti i job pronti: claim → esegui → claim del successivo, finché la coda è vuota.
+// Il loop termina sempre: claimNextJob filtra "when" <= NOW(), quindi i job rischedulati
+// nel futuro (es: il requeue del filescan) non vengono ripresi nello stesso giro.
+async function run() {
+    let count = 0;
+    while (true) {
+        const job = await api.claimNextJob();
+        if (!job) { break; }
+        await executeJob(job);
+        count++;
+    }
+    logger.info(count ? `Queue drained: ${count} job(s) executed.` : 'No pending jobs.');
 }
 
 module.exports = { run };

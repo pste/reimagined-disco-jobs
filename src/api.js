@@ -62,8 +62,10 @@ async function getPendingTags() {
     return _call('GET', '/api/scan/id3/pending');
 }
 
-async function deleteTag(song_id) {
-    return _call('DELETE', `/api/scan/id3/${song_id}`);
+async function deleteTag(song_id, updated_at) {
+    // updated_at: delete condizionale — la riga non viene cancellata se rimodificata nel frattempo
+    const qs = updated_at ? `?updated_at=${encodeURIComponent(updated_at)}` : '';
+    return _call('DELETE', `/api/scan/id3/${song_id}${qs}`);
 }
 
 async function setTagError(song_id) {

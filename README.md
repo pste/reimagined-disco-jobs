@@ -4,10 +4,11 @@ Background jobs runner for the Reimagined Disco platform. Runs as a Kubernetes C
 
 ## How it works
 
-1. On startup, calls `POST /api/jobs/claim` on the API — atomically claims the oldest pending job whose type is not already running.
+1. On startup, calls `POST /api/jobs/claim` on the API — atomically claims the oldest pending job whose `when` is due (`when <= NOW()`) and whose type is not already running.
 2. Dispatches to the appropriate handler.
-3. On completion, updates the job status to `done` or `error` via `PATCH /api/jobs/:id`.
-4. Exits.
+3. On completion, updates the job status via `PATCH /api/jobs/:id` — `done` (with `result='done'`) or `error` (with the error message in `result`).
+4. After a successful `filescan`, auto-requeues the next scan based on the `cronRequeue` parameter (skipped if not configured).
+5. Exits.
 
 If there are no pending jobs, it exits immediately.
 
@@ -53,4 +54,11 @@ Insert a row in the `jobs` table — the next CronJob invocation (every 5 minute
 
 ```sql
 INSERT INTO jobs (name, "when", status) VALUES ('filescan', NOW(), 'pending');
+```
+
+A partial unique index (`jobs_one_pending_per_name`) allows only one pending job per name, so the insert above fails if a pending job of the same type already exists. To re-arm a pending job's schedule instead, upsert:
+
+```sql
+INSERT INTO jobs (name, "when", status) VALUES ('filescan', NOW(), 'pending')
+ON CONFLICT (name) WHERE status = 'pending' DO UPDATE SET "when" = EXCLUDED."when";
 ```
